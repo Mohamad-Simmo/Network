@@ -1,0 +1,15 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.like-btn:hover,
+.unlike-btn:hover {
+  cursor: pointer;
+}
+
+.like-btn,
+.unlike-btn {
+  user-select: none;
+}
