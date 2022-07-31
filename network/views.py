@@ -7,7 +7,8 @@ from django.urls import reverse
 from django.db.models import Exists, OuterRef, F
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-
+import json
+from django.views.decorators.csrf import csrf_exempt
 from .models import *
 
 
@@ -45,7 +46,6 @@ def index(request):
         'page_obj': page_obj
     })
 
-
 def login_view(request):
     if request.method == "POST":
 
@@ -65,11 +65,9 @@ def login_view(request):
     else:
         return render(request, "network/login.html")
 
-
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
-
 
 def register(request):
     if request.method == "POST":
@@ -108,6 +106,10 @@ def profile(request, user_id):
         )
     ).select_related('entity').order_by('-entity__date', '-entity__id')
 
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
 
     is_followed = Follow.objects.filter(follower=request.user, following_id=user_id).exists()
 
@@ -116,7 +118,7 @@ def profile(request, user_id):
 
     return render(request, "network/profile.html", {
         "profile" : User.objects.get(id=user_id),
-        "posts" : posts,
+        "page_obj": page_obj,
         "is_followed": is_followed,
         "followers" : followers,
         "following" : following
@@ -130,7 +132,6 @@ def like (request, entity_id):
         user = request.user
     )
     return HttpResponse(status=204)
-
 
 def unlike (request, entity_id):
     if not request.user.is_authenticated:
@@ -148,3 +149,12 @@ def follow (request, user_id):
 def unfollow(request, user_id):
     Follow.objects.get(follower=request.user, following_id=user_id).delete()
     return HttpResponseRedirect(reverse("profile", kwargs={'user_id':user_id}))
+
+@csrf_exempt
+def edit_post(request, post_id):
+    post = Entity.objects.get(pk=post_id);
+    data = json.loads(request.body)
+    if data.get("new_post") is not None:
+        post.text = data["new_post"]
+    post.save()
+    return HttpResponse(status=204)
