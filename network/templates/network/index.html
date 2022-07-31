@@ -1,5 +1,5 @@
 {% extends "network/layout.html" %} {% block body %}
-<h2>All Posts</h2>
+
 {% if user.is_authenticated %}
 <form action="/" method="post" class="p-2 border">
   {% csrf_token %}
@@ -11,56 +11,9 @@
   ></textarea>
   <input type="submit" value="Post" class="btn btn-primary" />
 </form>
-{% endif %} {% for post in page_obj %}
-<div>
-  <a
-    href="{% url 'profile' post.entity.user.id %}"
-    class="text-decoration-none link-dark fw-bold fs-5"
-    >{{post.entity.user}}</a
-  >
-  <br />
-  <a href="#">Edit</a>
-  <div>{{post.entity.text}}</div>
-  <div class="text-muted">{{post.entity.date}}</div>
-  {% if not post.is_liked %}
-  <div class="like-btn d-inline" data-id="{{post.entity.id}}" data-like="like">
-    <i class="bi bi-heart"></i>
-    <div class="d-inline">{{post.entity.likes.count}}</div>
-  </div>
-  {%else%}
-  <div
-    class="like-btn d-inline"
-    data-id="{{post.entity.id}}"
-    data-like="unlike"
-  >
-    <i class="bi bi-heart-fill text-danger"></i>
-    <div class="d-inline">{{post.entity.likes.count}}</div>
-  </div>
-  {%endif%}
-  <br />
-  <a href="#">Comment</a>
-  <hr />
-</div>
-{% endfor %}
-<nav aria-label="Page navigation">
-  <ul class="pagination justify-content-center">
-    <li class="page-item">
-      {%if page_obj.has_previous%}
-      <a class="page-link" href="?page={{ page_obj.previous_page_number }}"
-        >Previous</a
-      >
-      {%else%}
-      <a class="page-link disabled" href="#">Previous</a>
-      {%endif%}
-    </li>
-    <li class="page-item">
-      {%if page_obj.has_next %}
-      <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
-      {%else%}
-      <a class="page-link disabled" href="#">Next</a>
-      {%endif%}
-    </li>
-  </ul>
-</nav>
+{% endif %} 
+
+{% include "network/posts.html" %}
+
 
 {% endblock %}
