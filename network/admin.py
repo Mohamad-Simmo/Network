@@ -5,7 +5,6 @@ from .models import *
 
 admin.site.register(User)
 admin.site.register(Post)
-admin.site.register(Comment)
 admin.site.register(Like)
 admin.site.register(Entity)
 admin.site.register(Follow)
