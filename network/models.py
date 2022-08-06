@@ -3,7 +3,7 @@ from django.db import models
 from datetime import datetime  
 
 class User(AbstractUser):
-    pass
+    pfp = models.ImageField(null=True ,upload_to='images/')
 
 class Follow(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name="following")
@@ -20,7 +20,3 @@ class Like(models.Model):
 
 class Post(models.Model):
     entity = models.OneToOneField(Entity, on_delete=models.CASCADE, related_name="post")
-
-class Comment(models.Model):
-    entity = models.OneToOneField(Entity, on_delete=models.CASCADE, related_name="comment")
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="post")

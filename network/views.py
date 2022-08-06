@@ -37,13 +37,26 @@ def index(request):
         return render(request, "network/index.html", {
             'page_obj': page_obj
         })
-    posts = Post.objects.all()
+    posts = Post.objects.all().select_related('entity').order_by('-entity__date', '-entity__id')
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
     return render(request, "network/index.html", {
         'page_obj': page_obj
+    })
+
+def following(request):
+    posts = Post.objects.filter(
+        entity__user__followers__in = Follow.objects.filter(follower=request.user)
+    ).select_related('entity').order_by('-entity__date', '-entity__id')
+
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    return render(request, "network/following.html", {
+        "page_obj": page_obj
     })
 
 def login_view(request):
@@ -99,27 +112,35 @@ def profile(request, user_id):
     user_posts = Post.objects.filter(
         entity__user_id=user_id
     )
-
-    posts = user_posts.annotate(
-        is_liked=Exists(
-            Like.objects.filter(user=request.user, entity_id=OuterRef('entity_id'))
-        )
-    ).select_related('entity').order_by('-entity__date', '-entity__id')
-
-    paginator = Paginator(posts, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-
-    is_followed = Follow.objects.filter(follower=request.user, following_id=user_id).exists()
-
     followers = Follow.objects.filter(following_id=user_id).count()
     following = Follow.objects.filter(follower_id=user_id).count()
 
+    if (request.user.is_authenticated):
+        posts = user_posts.annotate(
+        is_liked=Exists(
+            Like.objects.filter(user=request.user, entity_id=OuterRef('entity_id'))
+        )).select_related('entity').order_by('-entity__date', '-entity__id')
+
+        is_followed = Follow.objects.filter(follower=request.user, following_id=user_id).exists()
+
+        paginator = Paginator(posts, 10)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        return render(request, "network/profile.html", {
+            "profile" : User.objects.get(id=user_id),
+            "page_obj": page_obj,
+            "is_followed": is_followed,
+            "followers" : followers,
+            "following" : following
+        })
+    posts = user_posts.select_related('entity').order_by('-entity__date', '-entity__id')
+    paginator = Paginator(posts, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     return render(request, "network/profile.html", {
         "profile" : User.objects.get(id=user_id),
         "page_obj": page_obj,
-        "is_followed": is_followed,
         "followers" : followers,
         "following" : following
     })
@@ -158,3 +179,11 @@ def edit_post(request, post_id):
         post.text = data["new_post"]
     post.save()
     return HttpResponse(status=204)
+
+def upload_image(request):
+    if request.method == "POST":
+        user = User.objects.get(pk=request.user.id)
+        user.pfp = request.FILES["image"]
+        user.save()
+        return HttpResponseRedirect(reverse("profile", kwargs={'user_id':request.user.id}))
+
