@@ -48,8 +48,15 @@ def index(request):
 
 def following(request):
     posts = Post.objects.filter(
-        entity__user__followers__in = Follow.objects.filter(follower=request.user)
-    ).select_related('entity').order_by('-entity__date', '-entity__id')
+        entity__user__followers__in = Follow.objects.filter(
+                follower=request.user
+            )).annotate(
+                is_liked=Exists(
+                        Like.objects.filter(
+                                user=request.user, entity_id=OuterRef('entity_id')
+                            )
+                    )
+            ).select_related('entity').order_by('-entity__date', '-entity__id')
 
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
@@ -187,3 +194,7 @@ def upload_image(request):
         user.save()
         return HttpResponseRedirect(reverse("profile", kwargs={'user_id':request.user.id}))
 
+def post_view(request, post_id):
+    return render(request, "network/post.html", {
+        
+    })
