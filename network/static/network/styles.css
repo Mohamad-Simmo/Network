@@ -13,3 +13,78 @@
 .unlike-btn {
   user-select: none;
 }
+
+#cover {
+  height: 200px;
+  background-color: rgb(87, 66, 180);
+  position: relative;
+  margin-bottom: 50px;
+}
+
+#pfp {
+  position: absolute;
+  bottom: -15%;
+  left: 10%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#pfp img {
+  max-height: 150px;
+  max-width: 150px;
+  border-radius: 10%;
+}
+
+a {
+  text-decoration: none;
+}
+
+.post {
+  padding: 10px;
+  border: 1px solid rgb(216, 216, 216);
+  border-radius: 10px;
+  transition: all 200ms ease-out;
+  cursor: pointer;
+}
+.post:hover {
+  box-shadow: 0 0 0 2px rgb(0 0 0 / 20%);
+}
+
+.poster {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 20px;
+  width: fit-content;
+}
+.poster:hover {
+  text-decoration: underline;
+  text-decoration-color: black;
+}
+
+.poster img {
+  max-height: 50px;
+  max-width: 50px;
+  border-radius: 50%;
+}
+
+.dropdown {
+  background: white;
+  border-radius: 50%;
+  border: none;
+  padding: 5px;
+  width: 34px;
+  transition: all 200ms ease-out;
+}
+
+.dropdown:hover,
+.dropdown:focus {
+  background-color: rgb(216, 216, 216);
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
