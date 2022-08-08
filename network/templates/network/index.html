@@ -1,4 +1,6 @@
-{% extends "network/layout.html" %} {% block body %}
+{% extends "network/layout.html" %} 
+{% block index %} active {% endblock %}
+{% block body %}
 
 {% if user.is_authenticated %}
 <form action="/" method="post" class="my-2">
