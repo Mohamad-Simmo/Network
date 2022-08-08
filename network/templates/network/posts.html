@@ -1,41 +1,58 @@
+{% load static %}
 {% for post in page_obj %}
-<div data-id="{{post.entity.id}}">
-  <a
-    href="{% url 'profile' post.entity.user.id %}"
-    class="text-decoration-none link-dark fw-bold fs-5">
-    {{post.entity.user}}
-  </a>
+<div data-id="{{post.entity.id}}" class="post mb-4">
+  
+  <div class="post-header">
+    <a class="poster" href="{% url 'profile' post.entity.user.id %}" onclick="event.stopPropagation()">
+      <div>
+        {% if post.entity.user.pfp %}
+          <img src="{{ post.entity.user.pfp.url }}">
+        {% else %}
+          <img src="{% static 'network/profile-icon.jpg' %}" alt="">
+        {% endif %}
+      </div>
+      <div
+        class="text-decoration-none link-dark fw-bold fs-5">
+        {{post.entity.user}}
+      </div>
+    </a>
+    {% if post.entity.user.id == user.id %}
+    <div class="menu">
+      <button class="dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-three-dots-vertical" onclick="event.stopPropagation();"></i>
+      </button>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" onclick="editPost(this, event)">
+          <i class="bi bi-pencil-square"></i> Edit</a>
+        </li>
+        <li><a class="dropdown-item" href="#">
+          <i class="bi bi-trash"></i> Delete</a>
+        </li>
+      </ul>
+    </div>
+    {% endif %}
+  </div>
 
-  <br />
-
-  {% if post.entity.user.id == user.id %}
-  <!-- Button trigger modal -->
-  <button type="button" class="btn btn-secondary btn-sm edit-btn">
-    <i class="bi bi-pencil-square"></i> Edit
-  </button>
-  {% endif %}
-
-  <div>{{post.entity.text}}</div>
-  <div class="text-muted">{{post.entity.date}}</div>
-
+  <div class="post-body">
+    <div>{{post.entity.text}}</div>
+    <div class="text-muted">{{ post.entity.date}}</div>
+  </div>
+  
   {% if not post.is_liked %}
-  <div class="like-btn d-inline" data-like="like">
+  <div class="like-btn d-inline" data-action="like" onclick="likePost(this, event)">
     <i class="bi bi-heart"></i>
     <div class="d-inline">{{post.entity.likes.count}}</div>
   </div>
   {%else%}
-  <div class="like-btn d-inline" data-like="unlike">
+  <div class="like-btn d-inline" data-action="unlike" onclick="likePost(this, event)">
     <i class="bi bi-heart-fill text-danger"></i>
     <div class="d-inline">{{post.entity.likes.count}}</div>
   </div>
   {%endif%}
-
   <br />
-  <a href="#">Comment</a>
-  <hr />
+  <a href="{% url 'post' post.entity.id %}" onclick="event.stopPropagation()">Comment</a>
 </div>
 {% endfor %}
-
 
 <nav aria-label="Page navigation">
   <ul class="pagination justify-content-center">

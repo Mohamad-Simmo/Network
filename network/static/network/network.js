@@ -1,55 +1,87 @@
-document.querySelectorAll('.like-btn').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    fetch(`/entity/${btn.dataset.like}/${btn.parentElement.dataset.id}`).then(
-      (response) => {
-        if (response.status == 401) {
-          window.location.replace('/login');
-        } else {
-          if (btn.dataset.like == 'like') {
-            btn.dataset.like = 'unlike';
-            btn.children[0].classList.replace('bi-heart', 'bi-heart-fill');
-            btn.children[0].classList.add('text-danger');
-            btn.children[1].innerText = parseInt(btn.children[1].innerText) + 1;
-          } else if (btn.dataset.like == 'unlike') {
-            btn.dataset.like = 'like';
-            btn.children[0].classList.replace('bi-heart-fill', 'bi-heart');
-            btn.children[0].classList.remove('text-danger');
-            btn.children[1].innerText = parseInt(btn.children[1].innerText) - 1;
-          } else console.log('invalid');
-        }
-      }
-    );
+document.querySelectorAll('.post').forEach((post) => {
+  post.addEventListener('click', (event) => {
+    const id = event.currentTarget.dataset.id;
+    window.location.href = `/post/${id}`;
   });
 });
 
-document.querySelectorAll('.edit-btn').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    btn.style.display = 'none';
-    postId = btn.parentElement.dataset.id;
-    postText = btn.nextElementSibling.innerText;
-    editField = document.createElement('div');
-    editField.innerHTML = `
-      <form id="saveEdit">
-        <textarea class="form-control" name="editText">${postText}</textarea>
-        <input type="submit" class="btn btn-primary mt-2" value="save">
-      </form>
-    `;
-    textFieldElement = btn.nextElementSibling;
-    btn.nextElementSibling.replaceWith(editField);
-    editForm = document.getElementById('saveEdit');
-    editForm.addEventListener('submit', (event) => {
-      event.preventDefault();
-      newPost = editForm.elements.editText.value;
-      fetch(`/edit_post/${postId}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          new_post: newPost,
-        }),
-      }).then(() => {
-        textFieldElement.innerText = newPost;
-        editField.replaceWith(textFieldElement);
-        btn.style.display = 'block';
-      });
-    });
+const likePost = (el, event) => {
+  event.stopPropagation();
+  const action = el.dataset.action;
+  const postId = el.parentElement.dataset.id;
+  const icon = el.children[0];
+  const count = el.children[1];
+  fetch(`/entity/${action}/${postId}`).then((res) => {
+    if (res.status == 401) {
+      window.location.replace('/login');
+    } else if (res.status == 204) {
+      if (action == 'like') {
+        el.dataset.action = 'unlike';
+        icon.classList.replace('bi-heart', 'bi-heart-fill');
+        icon.classList.add('text-danger');
+        count.innerText = parseInt(count.innerText) + 1;
+      } else {
+        el.dataset.action = 'like';
+        icon.classList.replace('bi-heart-fill', 'bi-heart');
+        icon.classList.remove('text-danger');
+        count.innerText = parseInt(count.innerText) - 1;
+      }
+    }
   });
-});
+};
+
+let editing = false;
+const editPost = (el, event) => {
+  event.stopPropagation();
+  if (editing) {
+    let dropdown = el.closest('.menu').children[0];
+    dropdown = bootstrap.Dropdown.getInstance(dropdown);
+    dropdown.hide();
+    return;
+  }
+  editing = true;
+  let dropdown = el.closest('.menu').children[0];
+  dropdown = bootstrap.Dropdown.getInstance(dropdown);
+  dropdown.hide();
+
+  const body =
+    el.parentElement.parentElement.parentElement.parentElement
+      .nextElementSibling;
+
+  const post = body.children[0];
+
+  let postText = post.innerText;
+  const textarea = document.createElement('textarea');
+  textarea.classList.add('form-control', 'my-2');
+  textarea.value = postText;
+  post.replaceWith(textarea);
+  textarea.style.height = `${textarea.scrollHeight}px`;
+
+  const save = document.createElement('button');
+  save.classList.add('btn', 'btn-primary', 'mb-2');
+  save.innerText = 'save';
+  textarea.insertAdjacentElement('afterend', save);
+  textarea.onclick = (event) => {
+    event.stopPropagation();
+  };
+  save.onclick = (event) => {
+    event.stopPropagation();
+    postText = textarea.value;
+
+    postId = el.closest('.post').dataset.id;
+
+    fetch(`/edit_post/${postId}`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        new_post: postText,
+      }),
+    }).then((res) => {
+      if (res.status === 204) {
+        post.innerText = postText;
+        textarea.replaceWith(post);
+        save.remove();
+        editing = false;
+      }
+    });
+  };
+};
