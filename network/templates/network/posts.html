@@ -1,15 +1,11 @@
 {% load static %}
 {% for post in page_obj %}
-<div data-id="{{post.entity.id}}" class="post mb-4">
+<div data-id="{{post.entity.id}}" class="post entity mb-4">
   
   <div class="post-header">
     <a class="poster" href="{% url 'profile' post.entity.user.id %}" onclick="event.stopPropagation()">
       <div>
-        {% if post.entity.user.pfp %}
           <img src="{{ post.entity.user.pfp.url }}">
-        {% else %}
-          <img src="{% static 'network/profile-icon.jpg' %}" alt="">
-        {% endif %}
       </div>
       <div
         class="text-decoration-none link-dark fw-bold fs-5">
