@@ -11,6 +11,7 @@ urlpatterns = [
     path("register", views.register, name="register"),
     path("profile/<int:user_id>", views.profile, name="profile"),
     path("following", views.following, name="following"),
+    path("post/<int:entity_id>", views.post_view, name="post"),
 
     # API Routes
     path("entity/like/<int:entity_id>", views.like, name="like"),
@@ -19,5 +20,4 @@ urlpatterns = [
     path("unfollow/<int:user_id>", views.unfollow, name="unfollow"),
     path("edit_post/<int:post_id>", views.edit_post, name="edit_post"),
     path("upload_image", views.upload_image, name="upload_image")
-
 ]
