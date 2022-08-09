@@ -68,7 +68,7 @@ const editPost = (el, event) => {
     event.stopPropagation();
     postText = textarea.value;
 
-    postId = el.closest('.post').dataset.id;
+    let postId = el.closest('.entity').dataset.id;
 
     fetch(`/edit_post/${postId}`, {
       method: 'PUT',

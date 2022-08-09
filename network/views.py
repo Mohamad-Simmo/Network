@@ -4,7 +4,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from django.db.models import Exists, OuterRef, F
+from django.db.models import Exists, OuterRef, F,  Count
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 import json
@@ -194,7 +194,42 @@ def upload_image(request):
         user.save()
         return HttpResponseRedirect(reverse("profile", kwargs={'user_id':request.user.id}))
 
-def post_view(request, post_id):
-    return render(request, "network/post.html", {
+def post_view(request, entity_id):
+    if(request.method == 'POST'):
+        comment = request.POST["comment"]
+        Comment.objects.create(
+            entity = Entity.objects.create(
+                user = request.user,
+                text = comment
+            ),
+            post = Post.objects.get(entity_id=entity_id)
+        )
+        return redirect('post', entity_id)
+
+    post = Post.objects.get(entity_id=entity_id)
+    comments = Comment.objects.filter(post=post).annotate(
+                count = Count('entity__likes')
+            ).select_related('entity').order_by('-count', '-entity_id', '-entity__date')
+    
+    context = {}
+    if request.user.is_authenticated:
+        try:
+            is_liked = Exists(Like.objects.get(entity_id=entity_id, user=request.user))
+        except:
+            is_liked = False
+
+        context["is_liked"] = is_liked
+
+        comments = comments.annotate(
+            is_liked = Exists(
+                    Like.objects.filter(user=request.user, entity=OuterRef('entity_id'))
+                )
+        )
+    context.update({
+            "post": post,
+            "comments": comments
+        })
         
-    })
+    return render(request, "network/post.html", context)
+
+

@@ -1,0 +1,112 @@
+{% extends "network/layout.html" %} 
+
+
+{% load static %}
+
+
+{% block body %}
+
+<div data-id="{{post.id}}" class="entity mb-4">
+  
+    <div class="post-header mb-2">
+      <a class="poster" href="{% url 'profile' post.entity.user.id %}">
+        <div>
+          <img src="{{ post.entity.user.pfp.url }}" style="max-height: 100px;max-width: 100px;">
+        </div>
+        <div
+          class="text-decoration-none link-dark fw-bold fs-5">
+          {{post.entity.user}}
+        </div>
+      </a>
+      {% if post.entity.user.id == user.id %}
+      <div class="menu">
+        <button class="dropdown" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi bi-three-dots-vertical" ></i>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" onclick="editPost(this, event)">
+            <i class="bi bi-pencil-square"></i> Edit</a>
+          </li>
+          <li><a class="dropdown-item" href="#">
+            <i class="bi bi-trash"></i> Delete</a>
+          </li>
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+  
+    <div class="post-body">
+      <p class="fs-4">{{post.entity.text}}</p>
+      <div class="text-muted">{{ post.entity.date}}</div>
+    </div>
+    
+    {% if not is_liked %}
+    <div class="like-btn d-inline" data-action="like" onclick="likePost(this, event)">
+      <i class="bi bi-heart"></i>
+      <div class="d-inline">{{post.entity.likes.count}}</div>
+    </div>
+    {%else%}
+    <div class="like-btn d-inline" data-action="unlike" onclick="likePost(this, event)">
+      <i class="bi bi-heart-fill text-danger"></i>
+      <div class="d-inline">{{post.entity.likes.count}}</div>
+    </div>
+    {%endif%}
+  </div>
+  <hr>
+  <div class="comments-container">
+    <h5>Comments</h5>
+    <form method="post" class="mb-3">
+        {% csrf_token %}
+        <div class="d-flex align-items-center gap-1">
+          <img src="{{ user.pfp.url }}" style="max-width: 50px;max-height: 50px; border-radius:50%">
+          <div class="border w-100 d-flex rounded comment-input">
+            <input 
+              type="text" class="form-control border-0 shadow-none" 
+              placeholder="Write a comment"
+              name="comment"
+              autocomplete="off">
+            <input type="submit" class="btn btn-primary">
+          </div>
+        </div>
+    </form>
+
+    {% for comment in comments %}
+    <div data-id="{{comment.entity.id}}" class="mb-3 border rounded p-3">
+
+
+      <div class="post-header mb-2">
+        <a class="poster" href="{% url 'profile' comment.entity.user.id %}"">
+          <div>
+            <img src="{{ post.entity.user.pfp.url }}" style="max-width: 50px;max-height: 50px; border-radius:50%">
+          </div>
+          <div
+            class="text-decoration-none link-dark fw-bold fs-6">
+            {{comment.entity.user}}
+          </div>
+        </a>
+      </div>
+
+      <div class="post-body">
+        <div class="fs-6">{{comment.entity.text}}</div>
+        <div class="text-muted">{{ comment.entity.date}}</div>
+      </div>
+
+      {% if not comment.is_liked %}
+        <div class="like-btn d-inline" data-action="like" onclick="likePost(this, event)">
+          <i class="bi bi-heart"></i>
+          <div class="d-inline">{{comment.entity.likes.count}}</div>
+        </div>
+    {%else%}
+      <div class="like-btn d-inline" data-action="unlike" onclick="likePost(this, event)">
+        <i class="bi bi-heart-fill text-danger"></i>
+        <div class="d-inline">{{comment.entity.likes.count}}</div>
+      </div>
+    {%endif%}
+
+
+    </div>
+    
+    {% endfor %}
+
+  </div>
+{% endblock %}
