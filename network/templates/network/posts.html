@@ -1,6 +1,6 @@
 {% load static %}
 {% for post in page_obj %}
-<div data-id="{{post.entity.id}}" class="post entity mb-4">
+<div data-id="{{post.entity.id}}" data-animation class="post entity mb-4">
   
   <div class="post-header">
     <a class="poster" href="{% url 'profile' post.entity.user.id %}" onclick="event.stopPropagation()">
@@ -18,10 +18,10 @@
         <i class="bi bi-three-dots-vertical" onclick="event.stopPropagation();"></i>
       </button>
       <ul class="dropdown-menu">
-        <li><a class="dropdown-item" onclick="editPost(this, event)">
+        <li><a class="dropdown-item" onclick="editPost(this, event)" href="#">
           <i class="bi bi-pencil-square"></i> Edit</a>
         </li>
-        <li><a class="dropdown-item" href="#">
+        <li><a class="dropdown-item" href="javascript:void();" onclick="deletePost(this, event)">
           <i class="bi bi-trash"></i> Delete</a>
         </li>
       </ul>
