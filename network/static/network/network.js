@@ -44,10 +44,7 @@ const editPost = (el, event) => {
   dropdown = bootstrap.Dropdown.getInstance(dropdown);
   dropdown.hide();
 
-  const body =
-    el.parentElement.parentElement.parentElement.parentElement
-      .nextElementSibling;
-
+  const body = el.closest('.post-header').nextElementSibling;
   const post = body.children[0];
 
   let postText = post.innerText;
@@ -85,3 +82,66 @@ const editPost = (el, event) => {
     });
   };
 };
+
+const deletePost = (el, event) => {
+  event.stopPropagation();
+
+  let postId = el.closest('.entity').dataset.id;
+  const animation = el.closest('.entity').dataset.animation;
+  fetch(`/delete_post/${postId}`).then((response) => {
+    if (
+      response.status === 200 &&
+      el.closest('.entity').dataset.animation === undefined
+    )
+      window.location.replace('/');
+    else {
+      let post = el.closest('.entity');
+      post.remove();
+    }
+  });
+};
+
+const navPosts = document.querySelector('#profile-posts-link');
+const navAbout = document.querySelector('#profile-about-link');
+const navEdit = document.querySelector('#profile-edit-link');
+const containerPosts = document.querySelector('#profile-posts-cotainer');
+const containerAbout = document.querySelector('#profile-about-container');
+const containerEdit = document.querySelector('#profile-edit-container');
+document.querySelector('#profile-tabs').addEventListener('click', (event) => {
+  event.preventDefault();
+  target = event.target;
+  if (target.tagName != 'A') {
+    return;
+  } else {
+    if (target === navPosts) {
+      if (navPosts.classList.contains('active')) return;
+      navPosts.classList.add('active');
+      navAbout.classList.remove('active');
+      if (navEdit) navEdit.classList.remove('active');
+      containerPosts.hidden = false;
+      containerAbout.hidden = true;
+      if (containerEdit) containerEdit.hidden = true;
+    } else if (target === navAbout) {
+      if (navAbout.classList.contains('active')) return;
+      navAbout.classList.add('active');
+      navPosts.classList.remove('active');
+      if (navEdit) navEdit.classList.remove('active');
+      containerPosts.hidden = true;
+      containerAbout.hidden = false;
+      if (containerEdit) containerEdit.hidden = true;
+    } else if (target === navEdit) {
+      navAbout.classList.remove('active');
+      navPosts.classList.remove('active');
+      navEdit.classList.add('active');
+      containerPosts.hidden = true;
+      containerAbout.hidden = true;
+      containerEdit.hidden = false;
+    }
+  }
+});
+
+const cover = document.querySelector('#cover');
+const color = document.querySelector('input[type="color"]');
+color.addEventListener('input', (event, c) => {
+  cover.style.backgroundColor = event.srcElement.value;
+});
