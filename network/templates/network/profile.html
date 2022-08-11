@@ -1,31 +1,122 @@
 {% extends "network/layout.html" %} 
+{% load static %}
+{% block profile %}
+{% if profile.id == user.id %}
+  active
+{% endif %}
+{% endblock %}
 
 {% block body %}
+<div id="cover" {{cover}}>
+  <div id="pfp">
+    <img src="{{ profile.pfp.url }}">
+    <div>
+      <div class="fs-2 fw-light text-light">{{profile.username}}</div>
+      {% if user.is_authenticated and profile.id != user.id%}
+        {% if not is_followed %}
+          <a href="{% url 'follow' profile.id %}" class="text-light">
+            <button type="button" class="btn btn-outline-light">
+              <i class="bi bi-person-plus"></i>
+              Follow
+            </button>
+          </a>
+        {% else %}
+          <a href="{% url 'unfollow' profile.id %}" class="text-light">
+            <button type="button" class="btn btn-outline-light">
+              <i class="bi bi-person-dash"></i>
+              Unfollow
+            </button>
+          </a>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
 
-<h1>{{profile.username}}</h1>
-{% if profile.pfp %}
-<img src="{{ profile.pfp.url }}" alt="">
-{% endif %}
-
-{% if user.is_authenticated and profile.id == user.id%}
-<form action="{% url 'upload_image' %}" method="post" enctype="multipart/form-data">
-  {% csrf_token %}
-  <input type="file" name="image">
-  <input type="submit">
-</form>
-{% endif %}
-
-{% if user.is_authenticated and profile.id != user.id%}
-  {% if not is_followed %}
-    <a href="{% url 'follow' profile.id %}">Follow</a>
-  {% else %}
-  <a href="{% url 'unfollow' profile.id %}">Unfollow</a>
+<ul class="nav nav-tabs mb-3" id="profile-tabs">
+  <li class="nav-item">
+    <a class="nav-link active" id="profile-posts-link" href="#">Posts</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#" id="profile-about-link">About</a>
+  </li>
+  {% if user.is_authenticated and profile.id == user.id %}
+  <li class="nav-item">
+    <a class="nav-link" href="#" id="profile-edit-link">Edit</a>
+  </li>
   {% endif %}
-{% endif %} 
+</ul>
 
-Followers: {{ followers }}
-Following: {{ following }}
+<div id="profile-posts-cotainer">
+  {% include "network/posts.html" %}
+</div>
 
-{% include "network/posts.html" %}
+<div id="profile-about-container" hidden>
+  <div class="row mb-3">
+    <div class="col-2">
+      Username
+    </div>
+    <div class="col-10">
+      {{ profile.username }}
+    </div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-2">
+      Followers
+    </div>
+    <div class="col-10">
+      {{ followers }}
+    </div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-2">
+      Following
+    </div>
+    <div class="col-10">
+      {{ following }}
+    </div>
+  </div>
+  <div class="row mb-3">
+    <div class="col-2">
+      Biography
+    </div>
+    <div class="col-10">
+      {{ profile.biography }}
+    </div>
+  </div>
+</div>
 
+<div id="profile-edit-container" hidden>
+  {% if user.is_authenticated and profile.id == user.id %}
+  <form action="{% url 'edit_profile' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="row mb-3">
+      <div class="col-2">
+        <label for="profile-pic" class="col-form-label">Profile Picture</label>
+      </div>
+      <div class="col-10">
+        <input type="file" name="pfp" class="form-control" id="profile-pic">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-2">
+        <label for="color-picker" class="col-form-label">Cover color</label>
+      </div>
+      <div class="col-10">
+        <input type="color" id="color-picker" value="{{profile.cover}}" name="color">
+      </div>
+    </div>
+    <div class="row mb-3">
+      <div class="col-2">
+        <label for="biography" class="col-form-label">Biography</label>
+      </div>
+      <div class="col-10">
+        <textarea class="form-control" id="biography" name="bio">{{ profile.biography }}</textarea>
+      </div>
+    </div>
+
+    <input type="submit" class="btn btn-primary" value="Save">
+  </form>
+  {% endif %}
+</div>
 {% endblock %}

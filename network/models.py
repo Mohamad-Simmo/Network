@@ -4,6 +4,8 @@ from datetime import datetime
 
 class User(AbstractUser):
     pfp = models.ImageField(null=True ,upload_to='images/', default='/images/profile-icon.jpg')
+    cover = models.TextField(default="#707070")
+    biography = models.TextField(null=True)
 
 class Follow(models.Model):
     follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name="following")
