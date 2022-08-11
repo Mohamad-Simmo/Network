@@ -121,6 +121,8 @@ def profile(request, user_id):
     )
     followers = Follow.objects.filter(following_id=user_id).count()
     following = Follow.objects.filter(follower_id=user_id).count()
+    user = User.objects.get(id=user_id)
+    cover = "style=background-color:{}".format(user.cover)
 
     if (request.user.is_authenticated):
         posts = user_posts.annotate(
@@ -135,21 +137,23 @@ def profile(request, user_id):
         page_obj = paginator.get_page(page_number)
 
         return render(request, "network/profile.html", {
-            "profile" : User.objects.get(id=user_id),
+            "profile" : user,
             "page_obj": page_obj,
             "is_followed": is_followed,
             "followers" : followers,
-            "following" : following
+            "following" : following,
+            "cover": cover
         })
     posts = user_posts.select_related('entity').order_by('-entity__date', '-entity__id')
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return render(request, "network/profile.html", {
-        "profile" : User.objects.get(id=user_id),
+        "profile" : user,
         "page_obj": page_obj,
         "followers" : followers,
-        "following" : following
+        "following" : following,
+        "cover": cover
     })
 
 def like (request, entity_id):
@@ -187,12 +191,19 @@ def edit_post(request, post_id):
     post.save()
     return HttpResponse(status=204)
 
-def upload_image(request):
-    if request.method == "POST":
-        user = User.objects.get(pk=request.user.id)
-        user.pfp = request.FILES["image"]
-        user.save()
-        return HttpResponseRedirect(reverse("profile", kwargs={'user_id':request.user.id}))
+def edit_profile(request):
+    try:
+        pfp = request.FILES["pfp"]
+        request.user.pfp = pfp
+    except:
+        pass
+    bio = request.POST["bio"]
+    request.user.biography = bio
+    color = request.POST["color"]
+    request.user.cover = color
+    request.user.save()
+    return redirect('profile', request.user.id)
+
 
 def post_view(request, entity_id):
     if(request.method == 'POST'):
@@ -233,3 +244,10 @@ def post_view(request, entity_id):
     return render(request, "network/post.html", context)
 
 
+def delete_post(request, entity_id):
+    try:
+        Entity.objects.get(pk=entity_id).delete()
+    except:
+        return HttpResponse(status=502)
+    return HttpResponse(status=200)
+    
